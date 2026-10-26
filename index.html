@@ -47,7 +47,7 @@ h1.tall{min-height:2.3em}
 </head>
 <body>
 <main id="app"></main>
-<footer>The words you enter stay on your device and are never saved or sent by this game.<br>&copy; 2026 The Word Game</footer>
+<footer>Your words are never uploaded or saved by this game.<br>&copy; 2026 The Word Game</footer>
 <script>
 var ADJ=[],NOUN=[],pairs=[],idx=0;
 var app=document.getElementById("app");
@@ -101,15 +101,14 @@ function reveal(){
   show();
 }
 function show(){
-  var html='<h1 class="tall">'+(idx<0?'Hyperlinguistic Analysis Completed':'Results')+'</h1><div class="results">';
-  if(idx<0)html+='<p>Prepare for a written opus rendering descriptive gibberish amusingly meaningful enigmas.</p>';
+  var html;
+  if(idx<0)html='<h1>Hyperlinguistic Analysis Completed</h1><p>Prepare for a written opus rendering descriptive gibberish amusingly meaningful enigmas.</p>';
   else{
-    html+='<ul class="list" aria-live="polite">';
+    html='<h1>Results</h1><div class="results"><ul class="list" aria-live="polite">';
     for(var i=0;i<=idx;i++)html+='<li class="'+(i===idx?'new':'')+'">'+esc(pairs[i][0])+' <b>'+esc(pairs[i][1])+'</b></li>';
-    html+='</ul>';
+    html+='</ul></div><p>Pairing '+(idx+1)+' of 10</p>';
+    html+='<div class="done">'+(idx===9?'Word Game Complete.':'')+'</div>';
   }
-  html+='</div><p>'+(idx<0?'&nbsp;':'Pairing '+(idx+1)+' of 10')+'</p>';
-  html+='<div class="done">'+(idx===9?'Word Game Complete.':'')+'</div>';
   if(idx<9)html+='<button id="nx">'+(idx<0?"Show Results":"Show next pairing")+'</button>';
   else html+='<div id="end" class="btns"><button id="share">Share Results</button><button id="again" class="ghost">Play again</button></div>';
   app.innerHTML=html;wrap();
