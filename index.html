@@ -14,7 +14,8 @@ body{background:var(--bg);color:var(--ink);font:18px/1.4 Georgia,"Iowan Old Styl
 main{width:100%;max-width:480px;box-sizing:border-box;padding:28px 22px 60px;display:flex;flex-direction:column;justify-content:flex-start;gap:18px;align-self:center;
 min-height:min(calc(100vh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)),760px);
 min-height:min(calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)),760px)}
-#done,#go,#nx,#end{flex:none}
+#app{flex:1;display:flex;flex-direction:column;gap:18px}
+#done,#go,#nx,#end,#begin{flex:none}
 .btns{display:flex;gap:10px}
 .btns button{flex:1}
 footer{position:fixed;left:0;right:0;bottom:env(safe-area-inset-bottom,0px);padding:8px 22px;text-align:center;font-size:12px;line-height:1.4;color:var(--mute);pointer-events:none}
@@ -39,9 +40,10 @@ button:focus-visible{outline:3px solid var(--acc2);outline-offset:2px}
 .done{color:var(--ink);font-weight:bold}
 .title{font-size:40px;line-height:1.1;color:var(--acc);margin:0}
 .results{overflow:hidden}
+.modelabel{color:var(--mute);margin-bottom:-10px}
 .seg{display:flex;align-items:center;gap:10px}
 .seg span{color:var(--mute)}
-.seg button{flex:1;padding:10px 12px;background:var(--card);color:var(--ink);border:2px solid var(--line)}
+.seg button{flex:1;font-size:15px;padding:7px 10px;background:var(--card);color:var(--ink);border:2px solid var(--line)}
 .seg button.on{background:var(--acc);color:var(--bg);border-color:var(--acc)}
 .done{min-height:1.4em}
 h1.tall{min-height:2.3em}
@@ -50,14 +52,14 @@ h1.tall{min-height:2.3em}
 </style>
 </head>
 <body>
-<main id="app"></main>
+<main><div class="title">The Word Game</div><div id="app"></div></main>
 <footer>This game does not collect, store, or transmit your entries.<br>&copy; 2026 The Word Game</footer>
 <script>
 var ADJ=[],NOUN=[],pairs=[],idx=0,N=5;
 var app=document.getElementById("app");
 
 function wrap(){
-  var btn=app.querySelector("#done,#go,#nx,#end");
+  var btn=app.querySelector("#done,#go,#nx,#end,#begin");
   var st=document.createElement("div");st.className="stage";
   while(app.firstChild&&app.firstChild!==btn)st.appendChild(app.firstChild);
   app.insertBefore(st,btn);
@@ -75,25 +77,29 @@ function shareResults(btn){
 function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
 function esc(s){return s.replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 
-function collect(kind,list,next,title){
+function intro(next){
+  app.innerHTML='<div class="modelabel" id="modelabel">Game Mode</div><div class="seg" id="seg" role="group" aria-labelledby="modelabel"><button data-n="5">5 word pairs</button><button data-n="10">10 word pairs</button></div><button id="begin">Begin</button>';
+  wrap();
+  var btns=document.getElementById("seg").querySelectorAll("button");
+  function paint(){Array.prototype.forEach.call(btns,function(b){var on=Number(b.getAttribute("data-n"))===N;b.className=on?"on":"";b.setAttribute("aria-pressed",on)})}
+  Array.prototype.forEach.call(btns,function(b){b.onclick=function(){N=Number(b.getAttribute("data-n"));paint()}});
+  document.getElementById("begin").onclick=next;
+  paint();
+}
+
+function collect(kind,list,next){
   var label=kind==="adj"?"adjective":"noun";
-  var numWord=String(N);
-  app.innerHTML=(title?'<div class="title">'+title+'</div><div class="seg" id="seg" role="group" aria-label="Number of word pairs"><button data-n="5">5 word pairs</button><button data-n="10">10 word pairs</button></div>':'')+'<h1>Player '+(kind==="adj"?1:2)+': Enter '+numWord+' '+label+'s</h1>'+
+  app.innerHTML='<h1>Player '+(kind==="adj"?1:2)+': Enter '+N+' '+label+'s</h1>'+
   '<p>Words are hidden as you add them.</p>'+
   '<div class="row"><input id="w" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Enter one '+label+'" placeholder="One '+label+'"><button id="add">Add</button></div>'+
   '<div class="dots" id="dots" aria-live="polite"></div>'+
   '<button id="done" disabled>Ready to pass the device</button>';
   wrap();
   var w=document.getElementById("w"),dots=document.getElementById("dots"),done=document.getElementById("done");
-  var seg=document.getElementById("seg");
   function draw(){var h="";for(var i=0;i<N;i++)h+='<i class="'+(i<list.length?"on":"")+'"></i>';dots.innerHTML=h;
     dots.setAttribute("aria-label",list.length+" of "+N+" entered");
-    w.disabled=list.length>=N;document.getElementById("add").disabled=list.length>=N;done.disabled=list.length<N;
-    if(seg)Array.prototype.forEach.call(seg.querySelectorAll("button"),function(b){
-      var on=Number(b.getAttribute("data-n"))===N;b.className=on?"on":"";b.setAttribute("aria-pressed",on);b.disabled=list.length>0})}
+    w.disabled=list.length>=N;document.getElementById("add").disabled=list.length>=N;done.disabled=list.length<N}
   function add(){var v=w.value.trim();if(!v||list.length>=N)return;list.push(v);w.value="";draw();w.focus()}
-  if(seg)Array.prototype.forEach.call(seg.querySelectorAll("button"),function(b){
-    b.onclick=function(){var n=Number(b.getAttribute("data-n"));if(n!==N&&list.length===0){N=n;collect(kind,list,next,title)}}});
   document.getElementById("add").onclick=add;
   w.onkeydown=function(e){if(e.key==="Enter")add()};
   done.onclick=next;
@@ -129,13 +135,15 @@ function show(){
 
 function start(){
   ADJ=[];NOUN=[];
-  collect("adj",ADJ,function(){
-    handoff("Pass to Player 2","Ready when you are.","Ready",function(){
-      collect("noun",NOUN,function(){
-        handoff("This is an announcement.","The announcement has concluded.","Process Word Game Results",reveal);
+  intro(function(){
+    collect("adj",ADJ,function(){
+      handoff("Pass to Player 2","Ready when you are.","Ready",function(){
+        collect("noun",NOUN,function(){
+          handoff("This is an announcement.","The announcement has concluded.","Process Word Game Results",reveal);
+        });
       });
     });
-  },"The Word Game");
+  });
 }
 start();
 </script>
