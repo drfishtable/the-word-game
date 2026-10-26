@@ -48,6 +48,10 @@ button:focus-visible{outline:3px solid var(--acc2);outline-offset:2px}
 .done{min-height:1.4em}
 h1.tall{min-height:2.3em}
 .list li.new{border-color:var(--acc2)}
+.list li{display:flex;justify-content:space-between;align-items:center;gap:8px;white-space:nowrap}
+.list .w{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.list li.bonus{border-color:#d9a21b;background:rgba(233,180,58,.22);font-weight:bold}
+.tag{flex:none;font-size:11px;font-weight:bold;color:var(--acc2)}
 .list b{color:var(--acc2);font-weight:normal;font-style:italic}
 </style>
 </head>
@@ -73,6 +77,31 @@ function shareResults(btn){
   function copied(){var o=btn.textContent;btn.textContent="Copied!";setTimeout(function(){btn.textContent=o},1500)}
   if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(full).then(copied,function(){window.prompt("Copy your results:",full)});
   else window.prompt("Copy your results:",full);
+}
+function lead(w){return w.replace(/^[^A-Za-z\u00C0-\u024F]+/,"").charAt(0).toLowerCase()}
+function alliterates(a,b){var x=lead(a);return x!==""&&x===lead(b)}
+function confetti(){
+  if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+  var old=document.getElementById("confetti");if(old)old.remove();
+  var c=document.createElement("canvas");c.id="confetti";c.setAttribute("aria-hidden","true");
+  c.style.cssText="position:fixed;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:50";
+  var W=window.innerWidth,H=window.innerHeight,dpr=window.devicePixelRatio||1;
+  c.width=W*dpr;c.height=H*dpr;document.body.appendChild(c);
+  var g=c.getContext&&c.getContext("2d");if(!g){c.remove();return}
+  g.scale(dpr,dpr);
+  var cols=["#e9b43a","#b4532a","#2f6f73","#6fc0c4","#d94f70","#7b5ea7"],ps=[],i;
+  for(i=0;i<110;i++){var ang=-Math.PI/2+(Math.random()-.5)*Math.PI*1.3,sp=6+Math.random()*8;
+    ps.push({x:W/2,y:H*0.45,vx:Math.cos(ang)*sp,vy:Math.sin(ang)*sp,s:5+Math.random()*5,r:Math.random()*6.28,vr:(Math.random()-.5)*.4,c:cols[i%cols.length]})}
+  var t0=null,D=2600;
+  function frame(t){
+    if(t0===null)t0=t;var e=t-t0;
+    if(e>D){c.remove();return}
+    g.clearRect(0,0,W,H);g.globalAlpha=e>D-600?(D-e)/600:1;
+    ps.forEach(function(p){p.vy+=0.22;p.vx*=0.985;p.vy*=0.985;p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;
+      g.save();g.translate(p.x,p.y);g.rotate(p.r);g.fillStyle=p.c;g.fillRect(-p.s/2,-p.s/3,p.s,p.s*0.6);g.restore()});
+    window.requestAnimationFrame(frame);
+  }
+  window.requestAnimationFrame(frame);
 }
 function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
 function esc(s){return s.replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
@@ -113,7 +142,7 @@ function handoff(msg,sub,btn,next){
 }
 
 function reveal(){
-  var a=shuffle(ADJ),n=shuffle(NOUN);pairs=a.map(function(x,i){return[x,n[i]]});idx=-1;
+  pairs=ADJ.map(function(x,i){return[x,NOUN[i]]});idx=-1;
   show();
 }
 function show(){
@@ -121,13 +150,15 @@ function show(){
   if(idx<0)html='<h1>Hyperlinguistic Analysis Completed</h1><p>Prepare for a written opus rendering descriptive gibberish amusingly meaningful enigmas.</p>';
   else{
     html='<h1>Results</h1><div class="results" style="height:'+(N*28)+'px"><ul class="list" aria-live="polite">';
-    for(var i=0;i<=idx;i++)html+='<li class="'+(i===idx?'new':'')+'">'+esc(pairs[i][0])+' <b>'+esc(pairs[i][1])+'</b></li>';
+    for(var i=0;i<=idx;i++){var bn=alliterates(pairs[i][0],pairs[i][1]);
+      html+='<li class="'+(i===idx?'new':'')+(bn?' bonus':'')+'"><span class="w">'+esc(pairs[i][0])+' <b>'+esc(pairs[i][1])+'</b></span>'+(bn?'<span class="tag">&#9733; Alliteration bonus</span>':'')+'</li>'}
     html+='</ul></div><p>Pairing '+(idx+1)+' of '+N+'</p>';
     html+='<div class="done">'+(idx===N-1?'Word Game Complete.':'')+'</div>';
   }
   if(idx<N-1)html+='<button id="nx">'+(idx<0?"Show Results":"Show next pairing")+'</button>';
   else html+='<div id="end" class="btns"><button id="share">Share Results</button><button id="again" class="ghost">Play again</button></div>';
   app.innerHTML=html;wrap();
+  if(idx>=0&&alliterates(pairs[idx][0],pairs[idx][1]))confetti();
   var nx=document.getElementById("nx");if(nx)nx.onclick=function(){idx++;show()};
   var ag=document.getElementById("again");if(ag)ag.onclick=start;
   var sh=document.getElementById("share");if(sh)sh.onclick=function(){shareResults(sh)};
