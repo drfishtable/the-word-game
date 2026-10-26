@@ -11,10 +11,11 @@ box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:en
 :root[data-theme="dark"]{--bg:#14201f;--ink:#ece8dc;--mute:#93a3a1;--acc:#6fc0c4;--acc2:#e9895a;--card:#1d2e2d;--line:#2f4442;color-scheme:dark}
 html{height:100%}body{margin:0;min-height:100%}
 body{background:var(--bg);color:var(--ink);font:18px/1.4 Georgia,"Iowan Old Style",serif;display:flex;justify-content:center}
-main{width:100%;max-width:480px;box-sizing:border-box;padding:28px 22px;display:flex;flex-direction:column;justify-content:flex-start;gap:18px;align-self:center;
+main{width:100%;max-width:480px;box-sizing:border-box;padding:28px 22px 60px;display:flex;flex-direction:column;justify-content:flex-start;gap:18px;align-self:center;
 min-height:min(calc(100vh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)),760px);
 min-height:min(calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)),760px)}
 #done,#go,#nx,#again{flex:none}
+footer{position:fixed;left:0;right:0;bottom:env(safe-area-inset-bottom,0px);padding:8px 22px;text-align:center;font-size:12px;line-height:1.4;color:var(--mute);pointer-events:none}
 .stage{flex:1;display:flex;flex-direction:column;justify-content:center;gap:18px}
 h1{font-size:30px;margin:0;line-height:1.15}
 p{margin:0;color:var(--mute)}
@@ -44,6 +45,7 @@ h1.tall{min-height:2.3em}
 </head>
 <body>
 <main id="app"></main>
+<footer>The words you enter stay on your device and are never saved or sent by this game.<br>&copy; 2026 The Word Game</footer>
 <script>
 var ADJ=[],NOUN=[],pairs=[],idx=0;
 var app=document.getElementById("app");
