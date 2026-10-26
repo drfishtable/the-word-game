@@ -10,21 +10,21 @@ box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:en
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14201f;--ink:#ece8dc;--mute:#93a3a1;--acc:#6fc0c4;--acc2:#e9895a;--card:#1d2e2d;--line:#2f4442;color-scheme:dark}}
 :root[data-theme="dark"]{--bg:#14201f;--ink:#ece8dc;--mute:#93a3a1;--acc:#6fc0c4;--acc2:#e9895a;--card:#1d2e2d;--line:#2f4442;color-scheme:dark}
 html{height:100%}body{margin:0;min-height:100%}
-body{background:var(--bg);color:var(--ink);font:18px/1.4 Georgia,"Iowan Old Style",serif;display:flex;justify-content:center}
-main{width:100%;max-width:480px;box-sizing:border-box;padding:28px 22px 60px;display:flex;flex-direction:column;justify-content:flex-start;gap:18px;align-self:center;
-min-height:min(calc(100vh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)),760px);
-min-height:min(calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)),760px)}
-#app{flex:1;display:flex;flex-direction:column;gap:18px}
+body{background:var(--bg);color:var(--ink);font:18px/1.3 Georgia,"Iowan Old Style",serif;display:flex;justify-content:center}
+main{width:100%;max-width:480px;box-sizing:border-box;padding:24px 22px 52px;display:flex;flex-direction:column;justify-content:flex-start;gap:10px;align-self:center;
+min-height:min(calc(100vh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)),590px);
+min-height:min(calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)),590px)}
+#app{flex:1;display:flex;flex-direction:column;gap:10px}
 #done,#go,#nx,#end,#begin{flex:none}
 .btns{display:flex;gap:10px}
 .btns button{flex:1}
 footer{position:fixed;left:0;right:0;bottom:env(safe-area-inset-bottom,0px);padding:8px 22px;text-align:center;font-size:12px;line-height:1.4;color:var(--mute);pointer-events:none}
-.stage{flex:1;display:flex;flex-direction:column;justify-content:center;gap:18px}
+.stage{flex:1;display:flex;flex-direction:column;justify-content:flex-start;gap:10px}
 h1{font-size:30px;margin:0;line-height:1.15}
 p{margin:0;color:var(--mute)}
 input{font:inherit;padding:14px;border:2px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);width:100%;box-sizing:border-box}
 input:focus{outline:3px solid var(--acc);border-color:var(--acc)}
-button{font:inherit;font-weight:bold;padding:14px 18px;border:0;border-radius:10px;background:var(--acc);color:var(--bg);cursor:pointer}
+button{font:inherit;font-weight:bold;padding:12px 18px;border:2px solid transparent;border-radius:10px;background:var(--acc);color:var(--bg);cursor:pointer}
 button:disabled{opacity:.35;cursor:default}
 button:focus-visible{outline:3px solid var(--acc2);outline-offset:2px}
 .row{display:flex;gap:10px}.row input{flex:1}
@@ -35,12 +35,12 @@ button:focus-visible{outline:3px solid var(--acc2);outline-offset:2px}
 .pair b{color:var(--acc2);font-weight:normal;font-style:italic}
 .ghost{background:transparent;color:var(--mute);border:2px solid var(--line)}
 .hide{display:none}
-.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px}
-.list li{font-size:16px;line-height:1.3;padding:2px 10px;border:2px solid var(--line);border-radius:6px;background:var(--card)}
+.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.list li{font-size:15px;line-height:1.3;padding:1px 10px;border:2px solid var(--line);border-radius:6px;background:var(--card)}
 .done{color:var(--ink);font-weight:bold}
-.title{font-size:40px;line-height:1.1;color:var(--acc);margin:0}
+.title{font-size:36px;line-height:1.1;color:var(--acc);margin:0}
 .results{overflow:hidden}
-.modelabel{color:var(--mute);margin-bottom:-10px}
+.modelabel{color:var(--mute);margin-bottom:-6px}
 .seg{display:flex;align-items:center;gap:10px}
 .seg span{color:var(--mute)}
 .seg button{flex:1;font-size:15px;padding:7px 10px;background:var(--card);color:var(--ink);border:2px solid var(--line)}
@@ -91,7 +91,7 @@ function collect(kind,list,next){
   var label=kind==="adj"?"adjective":"noun";
   app.innerHTML='<h1>Player '+(kind==="adj"?1:2)+': Enter '+N+' '+label+'s</h1>'+
   '<p>Words are hidden as you add them.</p>'+
-  '<div class="row"><input id="w" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Enter one '+label+'" placeholder="One '+label+'"><button id="add">Add</button></div>'+
+  '<div class="row"><input id="w" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Enter one '+label+'" placeholder="One '+label+'"><button id="add">Add</button></div>'+
   '<div class="dots" id="dots" aria-live="polite"></div>'+
   '<button id="done" disabled>Ready to pass the device</button>';
   wrap();
@@ -120,7 +120,7 @@ function show(){
   var html;
   if(idx<0)html='<h1>Hyperlinguistic Analysis Completed</h1><p>Prepare for a written opus rendering descriptive gibberish amusingly meaningful enigmas.</p>';
   else{
-    html='<h1>Results</h1><div class="results" style="height:'+(N*33)+'px"><ul class="list" aria-live="polite">';
+    html='<h1>Results</h1><div class="results" style="height:'+(N*28)+'px"><ul class="list" aria-live="polite">';
     for(var i=0;i<=idx;i++)html+='<li class="'+(i===idx?'new':'')+'">'+esc(pairs[i][0])+' <b>'+esc(pairs[i][1])+'</b></li>';
     html+='</ul></div><p>Pairing '+(idx+1)+' of '+N+'</p>';
     html+='<div class="done">'+(idx===N-1?'Word Game Complete.':'')+'</div>';
