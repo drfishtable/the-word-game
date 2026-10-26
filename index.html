@@ -10,17 +10,17 @@ box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:en
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14201f;--ink:#ece8dc;--mute:#93a3a1;--acc:#6fc0c4;--acc2:#e9895a;--card:#1d2e2d;--line:#2f4442;color-scheme:dark}}
 :root[data-theme="dark"]{--bg:#14201f;--ink:#ece8dc;--mute:#93a3a1;--acc:#6fc0c4;--acc2:#e9895a;--card:#1d2e2d;--line:#2f4442;color-scheme:dark}
 html{height:100%}body{margin:0;min-height:100%}
-body{background:var(--bg);color:var(--ink);font:18px/1.3 Georgia,"Iowan Old Style",serif;display:flex;justify-content:center}
-main{width:100%;max-width:480px;box-sizing:border-box;padding:24px 22px 64px;text-align:center;display:flex;flex-direction:column;justify-content:flex-start;gap:10px;align-self:center;
-min-height:min(calc(100vh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)),604px);
-min-height:min(calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)),604px)}
-#app{flex:1;display:flex;flex-direction:column;gap:10px}
+body{background:var(--bg);color:var(--ink);font:18px/1.25 Georgia,"Iowan Old Style",serif;display:flex;justify-content:center}
+main{width:100%;max-width:480px;box-sizing:border-box;padding:24px 22px 64px;text-align:center;display:flex;flex-direction:column;justify-content:flex-start;gap:6px;align-self:center;
+min-height:min(calc(100vh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)),554px);
+min-height:min(calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)),554px)}
+#app{flex:1;display:flex;flex-direction:column;gap:6px}
 #done,#go,#nx,#end,#begin{flex:none}
 .btns{display:flex;gap:10px}
 .btns button{flex:1}
 footer{position:fixed;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);padding:8px 22px;text-align:center;font-size:12px;line-height:1.4;color:var(--mute);pointer-events:none}
-.stage{flex:1;display:flex;flex-direction:column;justify-content:center;gap:10px}
-h1{font-size:30px;margin:0;line-height:1.15}
+.stage{flex:1;display:flex;flex-direction:column;justify-content:flex-start;gap:6px;padding-top:8px}
+h1{font-size:28px;margin:0;line-height:1.1}
 p{margin:0;color:var(--mute)}
 input{font:inherit;padding:14px;border:2px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);width:100%;box-sizing:border-box}
 input:focus{outline:3px solid var(--acc);border-color:var(--acc)}
@@ -36,19 +36,19 @@ button:focus-visible{outline:3px solid var(--acc2);outline-offset:2px}
 .ghost{background:transparent;color:var(--mute);border:2px solid var(--line)}
 .hide{display:none}
 .list{text-align:left;list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
-.list li{font-size:15px;line-height:1.3;padding:1px 10px;border:2px solid var(--line);border-radius:6px;background:var(--card)}
+.list li{font-size:15px;line-height:1.2;padding:1px 10px;border:2px solid var(--line);border-radius:6px;background:var(--card)}
 .done{color:var(--ink);font-weight:bold}
 .title{font-size:36px;line-height:1.1;color:var(--acc);margin:0}
 .results{overflow:hidden}
-.modelabel{color:var(--mute);margin-bottom:-6px}
+.modelabel{color:var(--mute);margin-top:14px;margin-bottom:-4px}
 .seg{display:flex;align-items:center;justify-content:center;gap:10px}
 .seg span{color:var(--mute)}
 .seg button{flex:1;font-size:15px;padding:7px 10px;background:var(--card);color:var(--ink);border:2px solid var(--line)}
 .seg button.on{background:var(--acc);color:var(--bg);border-color:var(--acc)}
-.done{min-height:1.4em}
+.done{min-height:1.25em}
 .bar{height:14px;border:2px solid var(--line);border-radius:999px;background:var(--card);overflow:hidden;margin-top:6px}
 .fill{height:100%;width:0;background:var(--acc)}
-.status{min-height:1.4em}
+.status{min-height:1.25em}
 
 h1.tall{min-height:2.3em}
 .list li.new{border-color:var(--acc2)}
@@ -111,7 +111,7 @@ function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(M
 function esc(s){return s.replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 
 function intro(next){
-  app.innerHTML='<div class="modelabel" id="modelabel">Game Mode</div><div class="seg" id="seg" role="group" aria-labelledby="modelabel"><button data-n="5">5 word pairs</button><button data-n="10">10 word pairs</button></div><button id="begin">Begin</button>';
+  app.innerHTML='<p>One player adds adjectives, the other adds nouns. Neither sees the other&rsquo;s words until the game pairs them up and reveals each match.</p><div class="modelabel" id="modelabel">Game Mode</div><div class="seg" id="seg" role="group" aria-labelledby="modelabel"><button data-n="5">5 word pairs</button><button data-n="10">10 word pairs</button></div><button id="begin">Begin</button>';
   wrap();
   var btns=document.getElementById("seg").querySelectorAll("button");
   function paint(){Array.prototype.forEach.call(btns,function(b){var on=Number(b.getAttribute("data-n"))===N;b.className=on?"on":"";b.setAttribute("aria-pressed",on)})}
@@ -155,7 +155,7 @@ function reveal(){
   go.onclick=function(){idx=0;show()};
 }
 function show(){
-  var html='<h1>Results</h1><div class="results" style="height:'+(N*28)+'px"><ul class="list" aria-live="polite">';
+  var html='<h1>Results</h1><div class="results" style="height:'+(N*26)+'px"><ul class="list" aria-live="polite">';
   for(var i=0;i<=idx;i++){var bn=alliterates(pairs[i][0],pairs[i][1]);
     html+='<li class="'+(i===idx?'new':'')+(bn?' bonus':'')+'"><span class="w">'+esc(pairs[i][0])+' <b>'+esc(pairs[i][1])+'</b></span>'+(bn?'<span class="tag">&#9733; Alliteration bonus</span>':'')+'</li>'}
   html+='</ul></div><p>Pairing '+(idx+1)+' of '+N+'</p>';
