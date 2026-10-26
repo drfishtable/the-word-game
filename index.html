@@ -11,15 +11,15 @@ box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:en
 :root[data-theme="dark"]{--bg:#14201f;--ink:#ece8dc;--mute:#93a3a1;--acc:#6fc0c4;--acc2:#e9895a;--card:#1d2e2d;--line:#2f4442;color-scheme:dark}
 html{height:100%}body{margin:0;min-height:100%}
 body{background:var(--bg);color:var(--ink);font:18px/1.3 Georgia,"Iowan Old Style",serif;display:flex;justify-content:center}
-main{width:100%;max-width:480px;box-sizing:border-box;padding:24px 22px 52px;display:flex;flex-direction:column;justify-content:flex-start;gap:10px;align-self:center;
-min-height:min(calc(100vh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)),590px);
-min-height:min(calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)),590px)}
+main{width:100%;max-width:480px;box-sizing:border-box;padding:24px 22px 64px;text-align:center;display:flex;flex-direction:column;justify-content:flex-start;gap:10px;align-self:center;
+min-height:min(calc(100vh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)),604px);
+min-height:min(calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)),604px)}
 #app{flex:1;display:flex;flex-direction:column;gap:10px}
 #done,#go,#nx,#end,#begin{flex:none}
 .btns{display:flex;gap:10px}
 .btns button{flex:1}
-footer{position:fixed;left:0;right:0;bottom:env(safe-area-inset-bottom,0px);padding:8px 22px;text-align:center;font-size:12px;line-height:1.4;color:var(--mute);pointer-events:none}
-.stage{flex:1;display:flex;flex-direction:column;justify-content:flex-start;gap:10px}
+footer{position:fixed;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);padding:8px 22px;text-align:center;font-size:12px;line-height:1.4;color:var(--mute);pointer-events:none}
+.stage{flex:1;display:flex;flex-direction:column;justify-content:center;gap:10px}
 h1{font-size:30px;margin:0;line-height:1.15}
 p{margin:0;color:var(--mute)}
 input{font:inherit;padding:14px;border:2px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);width:100%;box-sizing:border-box}
@@ -28,24 +28,28 @@ button{font:inherit;font-weight:bold;padding:12px 18px;border:2px solid transpar
 button:disabled{opacity:.35;cursor:default}
 button:focus-visible{outline:3px solid var(--acc2);outline-offset:2px}
 .row{display:flex;gap:10px}.row input{flex:1}
-.dots{display:flex;gap:8px;flex-wrap:wrap}
+.dots{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
 .dots i{width:18px;height:18px;border-radius:50%;border:2px solid var(--line)}
 .dots i.on{background:var(--acc);border-color:var(--acc)}
 .pair{font-size:44px;line-height:1.1;min-height:130px;display:flex;flex-direction:column;justify-content:center}
 .pair b{color:var(--acc2);font-weight:normal;font-style:italic}
 .ghost{background:transparent;color:var(--mute);border:2px solid var(--line)}
 .hide{display:none}
-.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.list{text-align:left;list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
 .list li{font-size:15px;line-height:1.3;padding:1px 10px;border:2px solid var(--line);border-radius:6px;background:var(--card)}
 .done{color:var(--ink);font-weight:bold}
 .title{font-size:36px;line-height:1.1;color:var(--acc);margin:0}
 .results{overflow:hidden}
 .modelabel{color:var(--mute);margin-bottom:-6px}
-.seg{display:flex;align-items:center;gap:10px}
+.seg{display:flex;align-items:center;justify-content:center;gap:10px}
 .seg span{color:var(--mute)}
 .seg button{flex:1;font-size:15px;padding:7px 10px;background:var(--card);color:var(--ink);border:2px solid var(--line)}
 .seg button.on{background:var(--acc);color:var(--bg);border-color:var(--acc)}
 .done{min-height:1.4em}
+.bar{height:14px;border:2px solid var(--line);border-radius:999px;background:var(--card);overflow:hidden;margin-top:6px}
+.fill{height:100%;width:0;background:var(--acc)}
+.status{min-height:1.4em}
+
 h1.tall{min-height:2.3em}
 .list li.new{border-color:var(--acc2)}
 .list li{display:flex;justify-content:space-between;align-items:center;gap:8px;white-space:nowrap}
@@ -116,13 +120,13 @@ function intro(next){
   paint();
 }
 
-function collect(kind,list,next){
+function collect(kind,list,next,btn){
   var label=kind==="adj"?"adjective":"noun";
   app.innerHTML='<h1>Player '+(kind==="adj"?1:2)+': Enter '+N+' '+label+'s</h1>'+
   '<p>Words are hidden as you add them.</p>'+
   '<div class="row"><input id="w" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Enter one '+label+'" placeholder="One '+label+'"><button id="add">Add</button></div>'+
   '<div class="dots" id="dots" aria-live="polite"></div>'+
-  '<button id="done" disabled>Ready to pass the device</button>';
+  '<button id="done" disabled>'+btn+'</button>';
   wrap();
   var w=document.getElementById("w"),dots=document.getElementById("dots"),done=document.getElementById("done");
   function draw(){var h="";for(var i=0;i<N;i++)h+='<i class="'+(i<list.length?"on":"")+'"></i>';dots.innerHTML=h;
@@ -135,30 +139,31 @@ function collect(kind,list,next){
   draw();w.focus();
 }
 
-function handoff(msg,sub,btn,next){
-  app.innerHTML='<h1>'+msg+'</h1><p>'+sub+'</p><button id="go">'+btn+'</button>';
-  wrap();
-  document.getElementById("go").onclick=next;
-}
-
 function reveal(){
   pairs=ADJ.map(function(x,i){return[x,NOUN[i]]});idx=-1;
-  show();
+  app.innerHTML='<h1 id="ph">Please Stand By</h1><p>Prepare for a written opus rendering descriptive gibberish amusingly meaningful enigmas.</p>'+
+  '<div class="bar" id="bar" role="progressbar" aria-label="Analysis progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="fill" id="fill"></div></div>'+
+  '<p class="status" id="status" aria-live="polite">&nbsp;</p>'+
+  '<button id="go" style="visibility:hidden">Show Results</button>';
+  wrap();
+  var fill=document.getElementById("fill"),status=document.getElementById("status"),bar=document.getElementById("bar"),go=document.getElementById("go");
+  var msgs=["Initiating hyperlinguistic analysis...","Sequencing typographic protocols...","Delineating grammatical preformatives...","Condensing lexicographical coupling...","Finalizing hapax legomena configuration..."];
+  void fill.offsetWidth;
+  fill.style.transition="width 7s linear";fill.style.width="100%";
+  msgs.forEach(function(m,i){setTimeout(function(){status.textContent=m},i*1400)});
+  setTimeout(function(){document.getElementById("ph").textContent="READY";status.innerHTML="&nbsp;";bar.setAttribute("aria-valuenow","100");go.style.visibility="visible";go.focus()},7000);
+  go.onclick=function(){idx=0;show()};
 }
 function show(){
-  var html;
-  if(idx<0)html='<h1>Hyperlinguistic Analysis Completed</h1><p>Prepare for a written opus rendering descriptive gibberish amusingly meaningful enigmas.</p>';
-  else{
-    html='<h1>Results</h1><div class="results" style="height:'+(N*28)+'px"><ul class="list" aria-live="polite">';
-    for(var i=0;i<=idx;i++){var bn=alliterates(pairs[i][0],pairs[i][1]);
-      html+='<li class="'+(i===idx?'new':'')+(bn?' bonus':'')+'"><span class="w">'+esc(pairs[i][0])+' <b>'+esc(pairs[i][1])+'</b></span>'+(bn?'<span class="tag">&#9733; Alliteration bonus</span>':'')+'</li>'}
-    html+='</ul></div><p>Pairing '+(idx+1)+' of '+N+'</p>';
-    html+='<div class="done">'+(idx===N-1?'Word Game Complete.':'')+'</div>';
-  }
-  if(idx<N-1)html+='<button id="nx">'+(idx<0?"Show Results":"Show next pairing")+'</button>';
+  var html='<h1>Results</h1><div class="results" style="height:'+(N*28)+'px"><ul class="list" aria-live="polite">';
+  for(var i=0;i<=idx;i++){var bn=alliterates(pairs[i][0],pairs[i][1]);
+    html+='<li class="'+(i===idx?'new':'')+(bn?' bonus':'')+'"><span class="w">'+esc(pairs[i][0])+' <b>'+esc(pairs[i][1])+'</b></span>'+(bn?'<span class="tag">&#9733; Alliteration bonus</span>':'')+'</li>'}
+  html+='</ul></div><p>Pairing '+(idx+1)+' of '+N+'</p>';
+  html+='<div class="done">'+(idx===N-1?'Word Game Complete.':'')+'</div>';
+  if(idx<N-1)html+='<button id="nx">Show next pairing</button>';
   else html+='<div id="end" class="btns"><button id="share">Share Results</button><button id="again" class="ghost">Play again</button></div>';
   app.innerHTML=html;wrap();
-  if(idx>=0&&alliterates(pairs[idx][0],pairs[idx][1]))confetti();
+  if(alliterates(pairs[idx][0],pairs[idx][1]))confetti();
   var nx=document.getElementById("nx");if(nx)nx.onclick=function(){idx++;show()};
   var ag=document.getElementById("again");if(ag)ag.onclick=start;
   var sh=document.getElementById("share");if(sh)sh.onclick=function(){shareResults(sh)};
@@ -168,12 +173,8 @@ function start(){
   ADJ=[];NOUN=[];
   intro(function(){
     collect("adj",ADJ,function(){
-      handoff("Pass to Player 2","Ready when you are.","Ready",function(){
-        collect("noun",NOUN,function(){
-          handoff("This is an announcement.","The announcement has concluded.","Process Word Game Results",reveal);
-        });
-      });
-    });
+      collect("noun",NOUN,reveal,"Process Word Game Results");
+    },"Ready Player 2");
   });
 }
 start();
