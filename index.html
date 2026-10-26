@@ -40,7 +40,8 @@ button:focus-visible{outline:3px solid var(--acc2);outline-offset:2px}
 .done{color:var(--ink);font-weight:bold}
 .title{font-size:36px;line-height:1.1;color:var(--acc);margin:0}
 .results{overflow:hidden}
-.modelabel{color:var(--mute);margin-top:14px;margin-bottom:-4px}
+.modelabel{color:var(--mute);font-size:21px;margin-top:10px;margin-bottom:-2px}
+hr{width:100%;border:0;border-top:2px solid var(--line);margin:10px 0}
 .seg{display:flex;align-items:center;justify-content:center;gap:10px}
 .seg span{color:var(--mute)}
 .seg button{flex:1;font-size:15px;padding:7px 10px;background:var(--card);color:var(--ink);border:2px solid var(--line)}
@@ -111,7 +112,7 @@ function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(M
 function esc(s){return s.replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 
 function intro(next){
-  app.innerHTML='<p>One player adds adjectives, the other adds nouns. Neither sees the other&rsquo;s words until the game pairs them up and reveals each match.</p><div class="modelabel" id="modelabel">Game Mode</div><div class="seg" id="seg" role="group" aria-labelledby="modelabel"><button data-n="5">5 word pairs</button><button data-n="10">10 word pairs</button></div><button id="begin">Begin</button>';
+  app.innerHTML='<p>One player adds adjectives, the other adds nouns. Neither sees the other&rsquo;s words until the game pairs them up and reveals each match.</p><hr><div class="modelabel" id="modelabel">Select Game Mode</div><div class="seg" id="seg" role="group" aria-labelledby="modelabel"><button data-n="5">5 word pairs</button><button data-n="10">10 word pairs</button></div><button id="begin">Begin</button>';
   wrap();
   var btns=document.getElementById("seg").querySelectorAll("button");
   function paint(){Array.prototype.forEach.call(btns,function(b){var on=Number(b.getAttribute("data-n"))===N;b.className=on?"on":"";b.setAttribute("aria-pressed",on)})}
