@@ -60,7 +60,7 @@ function esc(s){return s.replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&
 function collect(kind,list,next,title){
   var label=kind==="adj"?"adjective":"noun";
   app.innerHTML=(title?'<div class="title">'+title+'</div>':'')+'<h1>Player '+(kind==="adj"?1:2)+': Enter '+(kind==="adj"?'ten':'10')+' '+label+'s</h1>'+
-  '<p>Words are hidden as you add them. Only the count shows.</p>'+
+  '<p>Words are hidden as you add them.</p>'+
   '<div class="row"><input id="w" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Enter one '+label+'" placeholder="One '+label+'"><button id="add">Add</button></div>'+
   '<div class="dots" id="dots" aria-live="polite"></div>'+
   '<button id="done" disabled>Ready to pass the device</button>';
