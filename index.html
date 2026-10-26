@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Word Game</title>
+<style>
+:root{--bg:#f2efe8;--ink:#1d2a2f;--mute:#6b777b;--acc:#2f6f73;--acc2:#b4532a;--card:#fff;--line:#d8d3c7;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14201f;--ink:#ece8dc;--mute:#93a3a1;--acc:#6fc0c4;--acc2:#e9895a;--card:#1d2e2d;--line:#2f4442;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#14201f;--ink:#ece8dc;--mute:#93a3a1;--acc:#6fc0c4;--acc2:#e9895a;--card:#1d2e2d;--line:#2f4442;color-scheme:dark}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:18px/1.4 Georgia,"Iowan Old Style",serif;display:flex;justify-content:center}
+main{width:100%;max-width:480px;padding:28px 22px;display:flex;flex-direction:column;justify-content:center;gap:18px}
+h1{font-size:30px;margin:0;line-height:1.15}
+p{margin:0;color:var(--mute)}
+input{font:inherit;padding:14px;border:2px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);width:100%;box-sizing:border-box}
+input:focus{outline:3px solid var(--acc);border-color:var(--acc)}
+button{font:inherit;font-weight:bold;padding:14px 18px;border:0;border-radius:10px;background:var(--acc);color:var(--bg);cursor:pointer}
+button:disabled{opacity:.35;cursor:default}
+button:focus-visible{outline:3px solid var(--acc2);outline-offset:2px}
+.row{display:flex;gap:10px}.row input{flex:1}
+.dots{display:flex;gap:8px;flex-wrap:wrap}
+.dots i{width:18px;height:18px;border-radius:50%;border:2px solid var(--line)}
+.dots i.on{background:var(--acc);border-color:var(--acc)}
+.pair{font-size:44px;line-height:1.1;min-height:130px;display:flex;flex-direction:column;justify-content:center}
+.pair b{color:var(--acc2);font-weight:normal;font-style:italic}
+.ghost{background:transparent;color:var(--mute);border:2px solid var(--line)}
+.hide{display:none}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<script>
+var ADJ=[],NOUN=[],pairs=[],idx=0;
+var app=document.getElementById("app");
+
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
+function esc(s){return s.replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+
+function collect(kind,list,next){
+  var label=kind==="adj"?"adjective":"noun";
+  app.innerHTML='<h1>Player '+(kind==="adj"?1:2)+': ten '+label+'s</h1>'+
+  '<p>Words are hidden as you add them. Only the count shows.</p>'+
+  '<div class="row"><input id="w" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Enter one '+label+'" placeholder="One '+label+'"><button id="add">Add</button></div>'+
+  '<div class="dots" id="dots" aria-live="polite"></div>'+
+  '<button id="done" disabled>Hide and pass the device</button>';
+  var w=document.getElementById("w"),dots=document.getElementById("dots"),done=document.getElementById("done");
+  function draw(){var h="";for(var i=0;i<10;i++)h+='<i class="'+(i<list.length?"on":"")+'"></i>';dots.innerHTML=h;
+    dots.setAttribute("aria-label",list.length+" of 10 entered");
+    w.disabled=list.length>=10;document.getElementById("add").disabled=list.length>=10;done.disabled=list.length<10}
+  function add(){var v=w.value.trim();if(!v||list.length>=10)return;list.push(v);w.value="";draw();w.focus()}
+  document.getElementById("add").onclick=add;
+  w.onkeydown=function(e){if(e.key==="Enter")add()};
+  done.onclick=next;
+  draw();w.focus();
+}
+
+function handoff(msg,btn,next){
+  app.innerHTML='<h1>'+msg+'</h1><p>Nothing entered so far is on screen.</p><button id="go">'+btn+'</button>';
+  document.getElementById("go").onclick=next;
+}
+
+function reveal(){
+  var a=shuffle(ADJ),n=shuffle(NOUN);pairs=a.map(function(x,i){return[x,n[i]]});idx=-1;
+  show();
+}
+function show(){
+  var html='<h1>Reveal</h1><div class="pair" aria-live="polite">';
+  if(idx<0)html+='<span style="font-size:22px;color:var(--mute)">Ten pairings are ready.</span>';
+  else html+='<span>'+esc(pairs[idx][0])+'</span><b>'+esc(pairs[idx][1])+'</b>';
+  html+='</div><p>'+(idx<0?"":("Pairing "+(idx+1)+" of 10"))+'</p>';
+  if(idx<9)html+='<button id="nx">'+(idx<0?"Show first pairing":"Show next pairing")+'</button>';
+  else html+='<button id="again" class="ghost">Play again</button>';
+  app.innerHTML=html;
+  var nx=document.getElementById("nx");if(nx)nx.onclick=function(){idx++;show()};
+  var ag=document.getElementById("again");if(ag)ag.onclick=start;
+}
+
+function start(){
+  ADJ=[];NOUN=[];
+  collect("adj",ADJ,function(){
+    handoff("Pass to Player 2","I’m Player 2",function(){
+      collect("noun",NOUN,function(){
+        handoff("All twenty words are in","Start the reveal",reveal);
+      });
+    });
+  });
+}
+start();
+</script>
+</body>
+</html>
