@@ -38,7 +38,11 @@ button:focus-visible{outline:3px solid var(--acc2);outline-offset:2px}
 .list li{font-size:16px;line-height:1.3;padding:2px 10px;border:2px solid var(--line);border-radius:6px;background:var(--card)}
 .done{color:var(--ink);font-weight:bold}
 .title{font-size:40px;line-height:1.1;color:var(--acc);margin:0}
-.results{height:330px;overflow:hidden}
+.results{overflow:hidden}
+.seg{display:flex;align-items:center;gap:10px}
+.seg span{color:var(--mute)}
+.seg button{flex:1;padding:10px 12px;background:var(--card);color:var(--ink);border:2px solid var(--line)}
+.seg button.on{background:var(--acc);color:var(--bg);border-color:var(--acc)}
 .done{min-height:1.4em}
 h1.tall{min-height:2.3em}
 .list li.new{border-color:var(--acc2)}
@@ -49,7 +53,7 @@ h1.tall{min-height:2.3em}
 <main id="app"></main>
 <footer>This game does not collect, store, or transmit your entries.<br>&copy; 2026 The Word Game</footer>
 <script>
-var ADJ=[],NOUN=[],pairs=[],idx=0;
+var ADJ=[],NOUN=[],pairs=[],idx=0,N=5;
 var app=document.getElementById("app");
 
 function wrap(){
@@ -73,17 +77,23 @@ function esc(s){return s.replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&
 
 function collect(kind,list,next,title){
   var label=kind==="adj"?"adjective":"noun";
-  app.innerHTML=(title?'<div class="title">'+title+'</div>':'')+'<h1>Player '+(kind==="adj"?1:2)+': Enter '+(kind==="adj"?'ten':'10')+' '+label+'s</h1>'+
+  var numWord=String(N);
+  app.innerHTML=(title?'<div class="title">'+title+'</div><div class="seg" id="seg" role="group" aria-label="Number of word pairs"><button data-n="5">5 word pairs</button><button data-n="10">10 word pairs</button></div>':'')+'<h1>Player '+(kind==="adj"?1:2)+': Enter '+numWord+' '+label+'s</h1>'+
   '<p>Words are hidden as you add them.</p>'+
   '<div class="row"><input id="w" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Enter one '+label+'" placeholder="One '+label+'"><button id="add">Add</button></div>'+
   '<div class="dots" id="dots" aria-live="polite"></div>'+
   '<button id="done" disabled>Ready to pass the device</button>';
   wrap();
   var w=document.getElementById("w"),dots=document.getElementById("dots"),done=document.getElementById("done");
-  function draw(){var h="";for(var i=0;i<10;i++)h+='<i class="'+(i<list.length?"on":"")+'"></i>';dots.innerHTML=h;
-    dots.setAttribute("aria-label",list.length+" of 10 entered");
-    w.disabled=list.length>=10;document.getElementById("add").disabled=list.length>=10;done.disabled=list.length<10}
-  function add(){var v=w.value.trim();if(!v||list.length>=10)return;list.push(v);w.value="";draw();w.focus()}
+  var seg=document.getElementById("seg");
+  function draw(){var h="";for(var i=0;i<N;i++)h+='<i class="'+(i<list.length?"on":"")+'"></i>';dots.innerHTML=h;
+    dots.setAttribute("aria-label",list.length+" of "+N+" entered");
+    w.disabled=list.length>=N;document.getElementById("add").disabled=list.length>=N;done.disabled=list.length<N;
+    if(seg)Array.prototype.forEach.call(seg.querySelectorAll("button"),function(b){
+      var on=Number(b.getAttribute("data-n"))===N;b.className=on?"on":"";b.setAttribute("aria-pressed",on);b.disabled=list.length>0})}
+  function add(){var v=w.value.trim();if(!v||list.length>=N)return;list.push(v);w.value="";draw();w.focus()}
+  if(seg)Array.prototype.forEach.call(seg.querySelectorAll("button"),function(b){
+    b.onclick=function(){var n=Number(b.getAttribute("data-n"));if(n!==N&&list.length===0){N=n;collect(kind,list,next,title)}}});
   document.getElementById("add").onclick=add;
   w.onkeydown=function(e){if(e.key==="Enter")add()};
   done.onclick=next;
@@ -104,12 +114,12 @@ function show(){
   var html;
   if(idx<0)html='<h1>Hyperlinguistic Analysis Completed</h1><p>Prepare for a written opus rendering descriptive gibberish amusingly meaningful enigmas.</p>';
   else{
-    html='<h1>Results</h1><div class="results"><ul class="list" aria-live="polite">';
+    html='<h1>Results</h1><div class="results" style="height:'+(N*33)+'px"><ul class="list" aria-live="polite">';
     for(var i=0;i<=idx;i++)html+='<li class="'+(i===idx?'new':'')+'">'+esc(pairs[i][0])+' <b>'+esc(pairs[i][1])+'</b></li>';
-    html+='</ul></div><p>Pairing '+(idx+1)+' of 10</p>';
-    html+='<div class="done">'+(idx===9?'Word Game Complete.':'')+'</div>';
+    html+='</ul></div><p>Pairing '+(idx+1)+' of '+N+'</p>';
+    html+='<div class="done">'+(idx===N-1?'Word Game Complete.':'')+'</div>';
   }
-  if(idx<9)html+='<button id="nx">'+(idx<0?"Show Results":"Show next pairing")+'</button>';
+  if(idx<N-1)html+='<button id="nx">'+(idx<0?"Show Results":"Show next pairing")+'</button>';
   else html+='<div id="end" class="btns"><button id="share">Share Results</button><button id="again" class="ghost">Play again</button></div>';
   app.innerHTML=html;wrap();
   var nx=document.getElementById("nx");if(nx)nx.onclick=function(){idx++;show()};
