@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Word Game</title>
 <style>
-:root{--bg:#f2efe8;--ink:#1d2a2f;--mute:#566266;--acc:#2f6f73;--acc2:#b4532a;--card:#fff;--line:#d8d3c7;--edge:#9a9486;--h:502px;--sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;--serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+:root{--bg:#f2efe8;--ink:#1d2a2f;--mute:#566266;--acc:#2f6f73;--acc2:#b4532a;--card:#fff;--line:#d8d3c7;--edge:#9a9486;--h:524px;--sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;--serif:Georgia,"Iowan Old Style","Times New Roman",serif;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14201f;--ink:#ece8dc;--mute:#93a3a1;--acc:#6fc0c4;--acc2:#e9895a;--card:#1d2e2d;--line:#2f4442;--edge:#5a7270;color-scheme:dark}}
 :root[data-theme="dark"]{--bg:#14201f;--ink:#ece8dc;--mute:#93a3a1;--acc:#6fc0c4;--acc2:#e9895a;--card:#1d2e2d;--line:#2f4442;--edge:#5a7270;color-scheme:dark}
@@ -42,7 +42,7 @@ button:focus-visible{outline:3px solid var(--acc2);outline-offset:2px}
 .list{text-align:left;list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
 .list li{font-size:15px;line-height:1.2;padding:0 10px;border:2px solid var(--line);border-radius:6px;background:var(--card)}
 .done{color:var(--ink);font-weight:bold}
-.title{font-size:clamp(30px,8.2vw,36px);letter-spacing:.01em;line-height:1.1;color:var(--acc);margin:0}
+.title{font-size:clamp(30px,8.2vw,36px);letter-spacing:.01em;line-height:1.1;color:var(--acc);margin:0 0 22px}
 .results{overflow:hidden}
 .modelabel{color:var(--mute);font-size:21px;margin-top:6px;margin-bottom:-2px}
 .intro{font-size:16px;line-height:1.35;text-wrap:balance;max-width:22em;margin:0 auto}
@@ -67,10 +67,11 @@ h1.tall{min-height:2.3em}
 .list li.bonus{border-color:#d9a21b;background:rgba(233,180,58,.22);font-weight:bold}
 .tag{flex:none;font-size:11px;font-weight:bold;color:var(--acc2)}
 .list b{color:var(--acc2);font-weight:normal;font-style:italic}
-@media (max-width:359px){:root{--h:522px}button{font-size:15px;padding-left:12px;padding-right:12px}}
-@media (min-width:640px){:root{--h:476px}
+@media (max-width:359px){:root{--h:544px}button{font-size:15px;padding-left:12px;padding-right:12px}}
+@media (min-width:640px){:root{--h:498px}
 main{padding:20px 32px 28px;background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:0 10px 40px rgba(29,42,47,.08)}
 .list li,input,.seg button:not(.on){background:var(--bg)}}
+@media (min-height:560px){main{transform:translateY(-11px)}}
 </style>
 </head>
 <body>
@@ -156,7 +157,7 @@ function collect(kind,list,next,btn){
 
 function reveal(){
   pairs=ADJ.map(function(x,i){return[x,NOUN[i]]});idx=-1;
-  app.innerHTML='<h1 id="ph">Please Stand By</h1><p>Prepare for a written opus rendering descriptive gibberish amusingly meaningful enigmas.</p>'+
+  app.innerHTML='<h1 id="ph">Please Stand By</h1><p>To Hatch Ephemeral Written Opus Rendering Descriptive Gibberish Amusingly Meaningful Enigmas</p>'+
   '<div class="bar" id="bar" role="progressbar" aria-label="Analysis progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="fill" id="fill"></div></div>'+
   '<p class="status" id="status" aria-live="polite">&nbsp;</p>'+
   '<button id="go" style="visibility:hidden">Show Results</button>';
