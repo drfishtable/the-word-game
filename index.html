@@ -40,7 +40,8 @@ button:focus-visible{outline:3px solid var(--acc2);outline-offset:2px}
 .ghost{background:transparent;color:var(--mute);border:2px solid var(--edge)}
 .hide{display:none}
 .list{text-align:left;list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
-.list li{font-size:15px;line-height:1.2;padding:0 10px;border:2px solid var(--line);border-radius:6px;background:var(--card)}
+.list li{display:flex;align-items:center;gap:6px}
+.list .box{flex:1;min-width:0;display:flex;justify-content:space-between;align-items:center;gap:8px;white-space:nowrap;font-size:15px;line-height:1.2;padding:0 10px;border:2px solid var(--line);border-radius:6px;background:var(--card)}
 .done{color:var(--ink);font-weight:bold}
 .title{font-size:clamp(30px,8.2vw,36px);letter-spacing:.01em;line-height:1.1;color:var(--acc);margin:0 0 22px}
 .results{overflow:hidden}
@@ -61,16 +62,17 @@ button:focus-visible{outline:3px solid var(--acc2);outline-offset:2px}
 .status{min-height:1.25em}
 
 h1.tall{min-height:2.3em}
-.list li.new{border-color:var(--acc2)}
-.list li{display:flex;justify-content:space-between;align-items:center;gap:8px;white-space:nowrap}
-.list .w{min-width:0;overflow:hidden;text-overflow:ellipsis}
-.list li.bonus{border-color:#d9a21b;background:rgba(233,180,58,.22);font-weight:bold}
+.list .box.new{border-color:var(--acc2)}
+.list .w{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.list .heart{flex:none;display:inline-flex;align-items:center;justify-content:center;height:26px;margin:-4px 0 -4px -8px;padding:0 8px;background:transparent;color:var(--mute);border:0;border-radius:6px;font-size:14px;line-height:1}
+@media (hover:hover){.list .heart:not(:disabled):hover{color:#d6336c;filter:none}}
+.list .box.bonus{border-color:#d9a21b;background:rgba(233,180,58,.22);font-weight:bold}
 .tag{flex:none;font-size:11px;font-weight:bold;color:var(--acc2)}
 .list b{color:var(--acc2);font-weight:normal;font-style:italic}
 @media (max-width:359px){:root{--h:544px}button{font-size:15px;padding-left:12px;padding-right:12px}}
 @media (min-width:640px){:root{--h:498px}
 main{padding:20px 32px 28px;background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:0 10px 40px rgba(29,42,47,.08)}
-.list li,input,.seg button:not(.on){background:var(--bg)}}
+.list .box,input,.seg button:not(.on){background:var(--bg)}}
 @media (min-height:560px){main{transform:translateY(-11px)}}
 </style>
 </head>
@@ -78,7 +80,7 @@ main{padding:20px 32px 28px;background:var(--card);border:1px solid var(--line);
 <main><div class="title">The Word Game</div><div id="app"></div></main>
 <footer>This game does not collect, store, or transmit your entries.<br>&copy; 2026 The Word Game</footer>
 <script>
-var ADJ=[],NOUN=[],pairs=[],idx=0,N=5;
+var ADJ=[],NOUN=[],pairs=[],idx=0,N=5,favs=[];
 var app=document.getElementById("app");
 
 function wrap(){
@@ -88,7 +90,7 @@ function wrap(){
   app.insertBefore(st,btn);
 }
 function shareResults(btn){
-  var lines=pairs.map(function(p,i){return (i+1)+". "+p[0]+" "+p[1]});
+  var lines=pairs.map(function(p,i){return (i+1)+". "+p[0]+" "+p[1]+(favs[i]?" \u2764\uFE0F":"")});
   var text="The Word Game results:\n"+lines.join("\n");
   var url=location.href.split("#")[0];
   if(navigator.share){navigator.share({title:"The Word Game",text:text,url:url}).catch(function(){});return}
@@ -122,6 +124,7 @@ function confetti(){
   }
   window.requestAnimationFrame(frame);
 }
+function heartHTML(on){return on?"\u2764\uFE0F":'<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>'}
 function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
 function esc(s){return s.replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 
@@ -156,7 +159,7 @@ function collect(kind,list,next,btn){
 }
 
 function reveal(){
-  pairs=ADJ.map(function(x,i){return[x,NOUN[i]]});idx=-1;
+  pairs=ADJ.map(function(x,i){return[x,NOUN[i]]});idx=-1;favs=pairs.map(function(){return false});
   app.innerHTML='<h1 id="ph">Please Stand By</h1><p>To Hatch Ephemeral Written Opus Rendering Descriptive Gibberish Amusingly Meaningful Enigmas</p>'+
   '<div class="bar" id="bar" role="progressbar" aria-label="Analysis progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="fill" id="fill"></div></div>'+
   '<p class="status" id="status" aria-live="polite">&nbsp;</p>'+
@@ -173,13 +176,14 @@ function reveal(){
 function show(){
   var html='<h1>Results</h1><div class="results" style="height:'+(N*24)+'px"><ul class="list" aria-live="polite">';
   for(var i=0;i<=idx;i++){var bn=alliterates(pairs[i][0],pairs[i][1]);
-    html+='<li class="'+(i===idx?'new':'')+(bn?' bonus':'')+'"><span class="w">'+esc(pairs[i][0])+' <b>'+esc(pairs[i][1])+'</b></span>'+(bn?'<span class="tag">&#9733; Alliteration bonus</span>':'')+'</li>'}
+    html+='<li><button class="heart" data-i="'+i+'" aria-pressed="'+(favs[i]?'true':'false')+'" aria-label="Favorite pairing: '+esc(pairs[i][0])+' '+esc(pairs[i][1])+'">'+heartHTML(favs[i])+'</button><span class="box'+(i===idx?' new':'')+(bn?' bonus':'')+'"><span class="w">'+esc(pairs[i][0])+' <b>'+esc(pairs[i][1])+'</b></span>'+(bn?'<span class="tag">&#9733; Alliteration bonus</span>':'')+'</span></li>'}
   html+='</ul></div><p>Pairing '+(idx+1)+' of '+N+'</p>';
   html+='<div class="done">'+(idx===N-1?'Word Game Complete.':'')+'</div>';
   if(idx<N-1)html+='<button id="nx">Show next pairing</button>';
   else html+='<div id="end" class="btns"><button id="share">Share Results</button><button id="again" class="ghost">Play again</button></div>';
   app.innerHTML=html;wrap();
   if(alliterates(pairs[idx][0],pairs[idx][1]))confetti();
+  Array.prototype.forEach.call(document.querySelectorAll(".heart"),function(b){b.onclick=function(){var i=Number(b.getAttribute("data-i"));favs[i]=!favs[i];b.setAttribute("aria-pressed",favs[i]?"true":"false");b.innerHTML=heartHTML(favs[i])}});
   var nx=document.getElementById("nx");if(nx)nx.onclick=function(){idx++;show()};
   var ag=document.getElementById("again");if(ag)ag.onclick=start;
   var sh=document.getElementById("share");if(sh)sh.onclick=function(){shareResults(sh)};
