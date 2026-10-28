@@ -80,9 +80,7 @@ main{padding:20px 32px 28px;background:var(--card);border:1px solid var(--line);
 .seg button{white-space:nowrap}
 .code{font:700 44px/1 var(--serif);letter-spacing:.2em;color:var(--acc);padding:6px 0 6px .2em}
 #rc{text-align:center;text-transform:uppercase;letter-spacing:.2em;font-size:22px}
-#seg2{gap:8px}
-#seg2 button{font-size:14px;padding:7px 6px;min-width:0}
-@media (max-width:359px){#seg2 button{font-size:12.5px;padding:7px 2px}}
+
 </style>
 </head>
 <body>
@@ -223,16 +221,16 @@ function onData(m){
   }
 }
 function sendIdx(){}
-function hostGame(tries){
-  tries=tries||0;
+function hostGame(){
   if(typeof Peer==="undefined"){notice("Online play isn&rsquo;t available right now.");return}
   closeRemote();role="host";
   var code="",i;for(i=0;i<4;i++)code+=ALPHA.charAt(Math.floor(Math.random()*ALPHA.length));
   screen('<h1>Your Room Code</h1><div class="code" aria-label="Room code '+code.split("").join(" ")+'">'+code+'</div><p id="hs">Setting up&hellip;</p><button id="inv" disabled>Share Invite</button>');
   var hs=document.getElementById("hs"),inv=document.getElementById("inv");
+  shareInvite(code,inv);
   peer=new Peer(PFX+code);
   peer.on("open",function(){hs.innerHTML="Waiting for Player 2&hellip;";inv.disabled=false;inv.onclick=function(){shareInvite(code,inv)}});
-  peer.on("error",function(e){if(e&&e.type==="unavailable-id"&&tries<5)hostGame(tries+1);else notice("Couldn&rsquo;t set up the room. Check your connection and try again.")});
+  peer.on("error",function(){notice("Couldn&rsquo;t set up the room. Check your connection and try again.")});
   peer.on("connection",function(c){
     if(conn){try{c.close()}catch(e){}return}
     conn=c;
@@ -264,13 +262,13 @@ function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(M
 function esc(s){return s.replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 
 function intro(next){
-  app.innerHTML='<p class="intro">One player adds adjectives, the other adds nouns. Neither sees the other&rsquo;s words until the game pairs them up and reveals each match.</p><div class="sp"></div><div class="mode"><div class="modelabel" id="ml1">Select Game Mode</div><div class="seg" id="seg" role="group" aria-labelledby="ml1"><button data-n="5">5 word pairs</button><button data-n="10">10 word pairs</button></div><div class="modelabel" id="ml2">Select Play Mode</div><div class="seg" id="seg2" role="group" aria-labelledby="ml2"><button data-m="local">Same device</button><button data-m="host">Host a game</button><button data-m="join">Join a game</button></div></div><div class="sp2"></div><button id="begin">Begin</button>';
+  app.innerHTML='<p class="intro">One player adds adjectives, the other adds nouns. Neither sees the other&rsquo;s words until the game pairs them up and reveals each match.</p><div class="sp"></div><div class="mode"><div class="modelabel" id="ml1">Select Game Mode</div><div class="seg" id="seg" role="group" aria-labelledby="ml1"><button data-n="5">5 word pairs</button><button data-n="10">10 word pairs</button></div><div class="modelabel" id="ml2">Select Play Mode</div><div class="seg" id="seg2" role="group" aria-labelledby="ml2"><button data-m="local">Local Game</button><button data-m="remote">Remote Game</button></div></div><div class="sp2"></div><button id="begin">Begin</button>';
   wrap();
   var nb=document.getElementById("seg").querySelectorAll("button"),mb=document.getElementById("seg2").querySelectorAll("button");
   function paint(){
     Array.prototype.forEach.call(nb,function(b){var on=Number(b.getAttribute("data-n"))===N;b.className=on?"on":"";b.setAttribute("aria-pressed",on)});
     Array.prototype.forEach.call(mb,function(b){var on=b.getAttribute("data-m")===PM;b.className=on?"on":"";b.setAttribute("aria-pressed",on)});
-    var hide=PM==="join";document.getElementById("ml1").style.display=hide?"none":"";document.getElementById("seg").style.display=hide?"none":"";
+    document.getElementById("begin").textContent=PM==="remote"?"Share Invite":"Begin";
     setFooter();
   }
   Array.prototype.forEach.call(nb,function(b){b.onclick=function(){N=Number(b.getAttribute("data-n"));paint()}});
@@ -338,10 +336,9 @@ function startLocal(){
 }
 function start(){
   closeRemote();ADJ=[];NOUN=[];
-  if(ROOM){var c=ROOM;ROOM=null;PM="join";setFooter();joinScreen(c);return}
+  if(ROOM){var c=ROOM;ROOM=null;PM="remote";setFooter();joinScreen(c);return}
   intro(function(){
-    if(PM==="host")hostGame();
-    else if(PM==="join")joinScreen("");
+    if(PM==="remote")hostGame();
     else startLocal();
   });
 }
