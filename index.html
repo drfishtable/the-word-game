@@ -131,19 +131,14 @@ function shareResults(btn){
 }
 function heartHTML(on){return on?"\u2764\uFE0F":'<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>'}
 function clean(w){return w.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z]/g,"")}
-function firstVowel(w){var m=w.match(/[aeiou]/);return m?m[0]:""}
-function syl(w){w=w.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/,"").replace(/^y/,"");var m=w.match(/[aeiouy]{1,2}/g);return m?m.length:1}
 function unique(w){return w.length>=4&&new Set(w.split("")).size===w.length}
 function bonuses(a,b){
   var x=clean(a),y=clean(b),r=[];
   if(!x||!y)return r;
   if(x[0]===y[0])r.push("Alliteration");
-  if(firstVowel(x)&&firstVowel(x)===firstVowel(y))r.push("Assonance");
   if(unique(x)&&unique(y))r.push("Isogram");
-  if(x.length>=5&&y.length>=5&&x.indexOf("e")<0&&y.indexOf("e")<0)r.push("Lipogram");
-  if(x.length>=3&&y.length>=3&&x.slice(-2)===y.slice(-2))r.push("Homoeoteleuton");
+  if(x.length>=3&&y.length>=3&&x.slice(-2)===y.slice(-2))r.push("Homoioteleuton");
   if(x.slice(-1)===y[0])r.push("Anadiplosis");
-  if(syl(x)>=2&&syl(x)===syl(y))r.push("Isosyllabic");
   return r;
 }
 function closePop(){var p=document.getElementById("bpop");if(p)p.remove();Array.prototype.forEach.call(document.querySelectorAll(".tag"),function(t){t.setAttribute("aria-expanded","false")})}
