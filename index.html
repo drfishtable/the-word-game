@@ -67,7 +67,9 @@ h1.tall{min-height:2.3em}
 .list .heart{flex:none;display:inline-flex;align-items:center;justify-content:center;height:26px;margin:-4px 0 -4px -8px;padding:0 8px;background:transparent;color:var(--mute);border:0;border-radius:6px;font-size:14px;line-height:1}
 @media (hover:hover){.list .heart:not(:disabled):hover{color:#d6336c;filter:none}}
 .list .box.bonus{border-color:#d9a21b;background:rgba(233,180,58,.22);font-weight:bold}
-.tag{flex:none;max-width:62%;overflow:hidden;text-overflow:ellipsis;font-size:11px;font-weight:bold;color:var(--acc2)}
+.list .tag{flex:none;max-width:62%;height:26px;line-height:26px;margin:-4px 0;padding:0 0 0 6px;background:transparent;border:0;border-radius:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;font-weight:bold;letter-spacing:0;color:var(--acc2);font-family:var(--sans)}
+#bpop{position:fixed;z-index:60;background:var(--card);color:var(--ink);border:2px solid #d9a21b;border-radius:12px;padding:8px 14px;box-shadow:0 8px 24px rgba(0,0,0,.18);font:600 14px/1.6 var(--sans);text-align:left;white-space:nowrap}
+#bpop span{color:var(--acc2)}
 .list b{color:var(--acc2);font-weight:normal;font-style:italic}
 @media (max-width:359px){:root{--h:544px}button{font-size:15px;padding-left:12px;padding-right:12px}}
 @media (min-width:640px){:root{--h:498px}
@@ -124,6 +126,17 @@ function bonuses(a,b){
   if(x.slice(-1)===y[0])r.push("Anadiplosis");
   if(syl(x)>=2&&syl(x)===syl(y))r.push("Isosyllabic");
   return r;
+}
+function closePop(){var p=document.getElementById("bpop");if(p)p.remove();Array.prototype.forEach.call(document.querySelectorAll(".tag"),function(t){t.setAttribute("aria-expanded","false")})}
+function openPop(btn,list){
+  closePop();
+  var p=document.createElement("div");p.id="bpop";p.setAttribute("role","dialog");p.setAttribute("aria-label","Bonuses");
+  p.innerHTML=list.map(function(n){return '<div><span>&#9733;</span> '+n+'</div>'}).join("");
+  document.body.appendChild(p);btn.setAttribute("aria-expanded","true");
+  var r=btn.getBoundingClientRect(),w=p.offsetWidth,h=p.offsetHeight;
+  var left=Math.max(8,Math.min(r.right-w,window.innerWidth-w-8)),top=r.bottom+6;
+  if(top+h>window.innerHeight-8)top=r.top-h-6;
+  p.style.left=left+"px";p.style.top=top+"px";
 }
 function tagText(l){return l.slice(0,2).join(" \u00b7 ")+(l.length>2?" +"+(l.length-2):"")}
 function confetti(n){
@@ -198,9 +211,10 @@ function reveal(){
   go.onclick=function(){idx=0;show()};
 }
 function show(){
+  closePop();
   var html='<h1>Results</h1><div class="results" style="height:'+(N*24)+'px"><ul class="list" aria-live="polite">';
   for(var i=0;i<=idx;i++){var bl=bonuses(pairs[i][0],pairs[i][1]),bn=bl.length>0;
-    html+='<li><button class="heart" data-i="'+i+'" aria-pressed="'+(favs[i]?'true':'false')+'" aria-label="Favorite pairing: '+esc(pairs[i][0])+' '+esc(pairs[i][1])+'">'+heartHTML(favs[i])+'</button><span class="box'+(i===idx?' new':'')+(bn?' bonus':'')+'"><span class="w">'+esc(pairs[i][0])+' <b>'+esc(pairs[i][1])+'</b></span>'+(bn?'<span class="tag" title="'+esc(bl.join(", "))+'" aria-label="Bonuses: '+esc(bl.join(", "))+'">&#9733; '+esc(tagText(bl))+'</span>':'')+'</span></li>'}
+    html+='<li><button class="heart" data-i="'+i+'" aria-pressed="'+(favs[i]?'true':'false')+'" aria-label="Favorite pairing: '+esc(pairs[i][0])+' '+esc(pairs[i][1])+'">'+heartHTML(favs[i])+'</button><span class="box'+(i===idx?' new':'')+(bn?' bonus':'')+'"><span class="w">'+esc(pairs[i][0])+' <b>'+esc(pairs[i][1])+'</b></span>'+(bn?'<button type="button" class="tag" data-i="'+i+'" aria-expanded="false" aria-label="Bonuses: '+esc(bl.join(", "))+'. Show all">&#9733; '+esc(tagText(bl))+'</button>':'')+'</span></li>'}
   html+='</ul></div><p>Pairing '+(idx+1)+' of '+N+'</p>';
   html+='<div class="done">'+(idx===N-1?'Word Game Complete.':'')+'</div>';
   if(idx<N-1)html+='<button id="nx">Show next pairing</button>';
@@ -208,6 +222,7 @@ function show(){
   app.innerHTML=html;wrap();
   var cb=bonuses(pairs[idx][0],pairs[idx][1]).length;if(cb)confetti(cb);
   Array.prototype.forEach.call(document.querySelectorAll(".heart"),function(b){b.onclick=function(){var i=Number(b.getAttribute("data-i"));favs[i]=!favs[i];b.setAttribute("aria-pressed",favs[i]?"true":"false");b.innerHTML=heartHTML(favs[i])}});
+  Array.prototype.forEach.call(document.querySelectorAll(".tag"),function(t){t.onclick=function(e){e.stopPropagation();var was=t.getAttribute("aria-expanded")==="true";closePop();if(!was){var i=Number(t.getAttribute("data-i"));openPop(t,bonuses(pairs[i][0],pairs[i][1]))}}});
   var nx=document.getElementById("nx");if(nx)nx.onclick=function(){idx++;show()};
   var ag=document.getElementById("again");if(ag)ag.onclick=start;
   var sh=document.getElementById("share");if(sh)sh.onclick=function(){shareResults(sh)};
@@ -221,6 +236,8 @@ function start(){
     },"Ready Player 2");
   });
 }
+document.addEventListener("click",closePop);
+document.addEventListener("keydown",function(e){if(e.key==="Escape")closePop()});
 start();
 </script>
 </body>
