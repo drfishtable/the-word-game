@@ -230,12 +230,14 @@ function hostGame(){
   shareInvite(code,inv);
   peer=new Peer(PFX+code);
   peer.on("open",function(){hs.innerHTML="Waiting for Player 2&hellip;";inv.disabled=false;inv.onclick=function(){shareInvite(code,inv)}});
-  peer.on("error",function(){notice("Couldn&rsquo;t set up the room. Check your connection and try again.")});
+  peer.on("error",function(e){notice("Couldn&rsquo;t set up the room ("+((e&&e.type)||"error")+"). Check your connection and try again.")});
+  peer.on("disconnected",function(){if(peer&&!peer.destroyed){try{peer.reconnect()}catch(e){}}});
   peer.on("connection",function(c){
     if(conn){try{c.close()}catch(e){}return}
-    conn=c;
-    c.on("open",function(){send({t:"hello",n:N});beginEntry()});
-    c.on("data",onData);c.on("close",lost);c.on("error",lost);
+    conn=c;var opened=false;
+    c.on("open",function(){opened=true;c.on("close",lost);c.on("error",lost);send({t:"hello",n:N});beginEntry()});
+    c.on("data",onData);
+    c.on("close",function(){if(!opened&&conn===c)conn=null});
   });
 }
 function joinScreen(code){
@@ -246,14 +248,23 @@ function joinScreen(code){
     if(c.length!==4){js.textContent="Enter the 4-character code.";return}
     if(typeof Peer==="undefined"){js.textContent="Online play isn\u2019t available right now.";return}
     closeRemote();role="guest";jb.disabled=true;js.textContent="Connecting\u2026";
-    var t=setTimeout(function(){jb.disabled=false;js.textContent="Couldn\u2019t connect. Try again.";try{peer.destroy()}catch(e){}},15000);
+    var tries=0,t=setTimeout(function(){fail("Couldn\u2019t connect. Try again.")},40000);
+    function fail(msg){clearTimeout(t);jb.disabled=false;js.textContent=msg;try{peer.destroy()}catch(e){}}
+    function attempt(){
+      tries++;var cn=peer.connect(PFX+c,{serialization:"json",reliable:true});conn=cn;
+      cn.on("open",function(){clearTimeout(t);js.textContent="Connected\u2026";cn.on("close",lost);cn.on("error",lost)});
+      cn.on("data",onData);
+    }
     peer=new Peer();
-    peer.on("open",function(){
-      conn=peer.connect(PFX+c,{serialization:"json",reliable:true});
-      conn.on("open",function(){clearTimeout(t);js.textContent="Connected\u2026"});
-      conn.on("data",onData);conn.on("close",lost);conn.on("error",lost);
+    peer.on("open",attempt);
+    peer.on("disconnected",function(){if(peer&&!peer.destroyed){try{peer.reconnect()}catch(e){}}});
+    peer.on("error",function(e){
+      if(e&&e.type==="peer-unavailable"&&tries<12){
+        js.textContent="Waiting for the host\u2026";
+        setTimeout(function(){if(peer&&!peer.destroyed&&!(conn&&conn.open))attempt()},3000);return;
+      }
+      fail(e&&e.type==="peer-unavailable"?"Room not found. Check the code.":"Couldn\u2019t connect ("+((e&&e.type)||"error")+"). Try again.");
     });
-    peer.on("error",function(e){clearTimeout(t);jb.disabled=false;js.textContent=e&&e.type==="peer-unavailable"?"Room not found. Check the code.":"Couldn\u2019t connect. Try again."});
   }
   jb.onclick=go;rc.onkeydown=function(e){if(e.key==="Enter")go()};
   if(code)go();else rc.focus();
@@ -342,6 +353,7 @@ function start(){
     else startLocal();
   });
 }
+document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible"&&peer&&peer.disconnected&&!peer.destroyed){try{peer.reconnect()}catch(e){}}});
 document.addEventListener("click",closePop);
 document.addEventListener("keydown",function(e){if(e.key==="Escape")closePop()});
 start();
