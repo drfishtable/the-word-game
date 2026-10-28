@@ -225,13 +225,9 @@ function onData(m){
     if(l.length!==N||l.some(function(x){return !x}))return;
     if(role==="host")NOUN=l;else ADJ=l;
     theirReady=true;maybeStart();
-  }else if(m.t==="idx"){
-    var i=Number(m.i);if(!(i>=0&&i<N))return;
-    remoteIdx=Math.max(remoteIdx,i);
-    if((resultsOn&&remoteIdx>idx)||(!resultsOn&&procDone)){idx=remoteIdx;show()}
   }
 }
-function sendIdx(){if(isRemote())send({t:"idx",i:idx})}
+function sendIdx(){}
 function hostGame(tries){
   tries=tries||0;
   if(typeof Peer==="undefined"){notice("Online play isn&rsquo;t available right now.");return}
