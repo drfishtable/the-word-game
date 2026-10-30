@@ -97,10 +97,12 @@ function wrap(){
   while(app.firstChild&&app.firstChild!==btn)st.appendChild(app.firstChild);
   app.insertBefore(st,btn);
 }
+function baseURL(){return location.origin+location.pathname.replace(/index\.html$/,"")}
+function playAgain(){try{history.replaceState(null,"",location.pathname.replace(/index\.html$/,""))}catch(e){}start()}
 function shareResults(btn){
   var lines=pairs.map(function(p,i){return (i+1)+". "+p[0]+" "+p[1]+(favs[i]?" \u2764\uFE0F":"")});
   var text="The Word Game results:\n"+lines.join("\n");
-  var url=location.href.split("#")[0];
+  var url=baseURL();
   var full=text+"\n"+url;
   function copied(){var o=btn.textContent;btn.textContent="Copied!";setTimeout(function(){btn.textContent=o},1500)}
   function fallback(){
@@ -118,14 +120,10 @@ function shareResults(btn){
 }
 function heartHTML(on){return on?"\u2764\uFE0F":'<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>'}
 function clean(w){return w.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z]/g,"")}
-function unique(w){return w.length>=4&&new Set(w.split("")).size===w.length}
 function bonuses(a,b){
   var x=clean(a),y=clean(b),r=[];
   if(!x||!y)return r;
-  if(x[0]===y[0])r.push("Alliteration");
-  if(unique(x)&&unique(y))r.push("Isogram");
-  if(x.length>=3&&y.length>=3&&x.slice(-2)===y.slice(-2))r.push("Homoioteleuton");
-  if(x.slice(-1)===y[0])r.push("Anadiplosis");
+  if(x[0]===y[0])r.push("Alliteration Bonus");
   return r;
 }
 function closePop(){var p=document.getElementById("bpop");if(p)p.remove();Array.prototype.forEach.call(document.querySelectorAll(".tag"),function(t){t.setAttribute("aria-expanded","false")})}
@@ -185,7 +183,7 @@ function lost(){
   document.getElementById("lb").onclick=start;
 }
 function shareInvite(code,btn){
-  var url=location.origin+location.pathname+"?room="+code,text="Join my Word Game. Room code: "+code;
+  var url=baseURL()+"?room="+code,text="Join my Word Game. Room code: "+code;
   function copy(){var full=text+"\n"+url;
     if(navigator.clipboard&&navigator.clipboard.writeText){try{navigator.clipboard.writeText(full).then(function(){var o=btn.textContent;btn.textContent="Copied!";setTimeout(function(){btn.textContent=o},1500)},function(){window.prompt("Copy this invite:",full)})}catch(e){window.prompt("Copy this invite:",full)}}
     else window.prompt("Copy this invite:",full)}
@@ -327,7 +325,7 @@ function show(){
   Array.prototype.forEach.call(document.querySelectorAll(".heart"),function(b){b.onclick=function(){var i=Number(b.getAttribute("data-i"));favs[i]=!favs[i];b.setAttribute("aria-pressed",favs[i]?"true":"false");b.innerHTML=heartHTML(favs[i])}});
   Array.prototype.forEach.call(document.querySelectorAll(".tag"),function(t){t.onclick=function(e){e.stopPropagation();var was=t.getAttribute("aria-expanded")==="true";closePop();if(!was){var i=Number(t.getAttribute("data-i"));openPop(t,bonuses(pairs[i][0],pairs[i][1]))}}});
   var nx=document.getElementById("nx");if(nx)nx.onclick=function(){idx=Math.min(N-1,Math.max(idx+1,remoteIdx));show();sendIdx()};
-  var ag=document.getElementById("again");if(ag)ag.onclick=start;
+  var ag=document.getElementById("again");if(ag)ag.onclick=playAgain;
   var sh=document.getElementById("share");if(sh)sh.onclick=function(){shareResults(sh)};
 }
 
