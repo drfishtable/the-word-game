@@ -167,7 +167,9 @@ try{var q=new URLSearchParams(location.search).get("room");if(q&&/^[A-Za-z0-9]{4
 function isRemote(){return PM!=="local"}
 function setFooter(){var f=document.getElementById("ft");if(f)f.textContent=isRemote()?"Your words are relayed to your opponent and aren\u2019t stored.":"This game does not collect, store, or transmit your entries."}
 function screen(h){app.innerHTML=h;wrap()}
+var HOST=null,paired=false,pingT=null;
 function closeRemote(){
+  clearInterval(pingT);HOST=null;paired=false;
   if(socket){
     socket.onopen=socket.onmessage=socket.onerror=socket.onclose=null;
     try{socket.close()}catch(e){}
@@ -212,20 +214,36 @@ function onData(m){
   }
 }
 function sendIdx(){}
+function connectHost(tries){
+  var h=HOST;if(!h)return;
+  h.n=(h.n||0)+1;
+  if(h.n>60){ended=true;notice("Couldn&rsquo;t set up the room. Check your connection and try again.");return}
+  var opened=false,s=new WebSocket(roomURL(h.code,"host"));socket=s;
+  s.onopen=function(){
+    opened=true;h.hs.innerHTML="Waiting for Player 2&hellip;";h.inv.disabled=false;h.inv.onclick=function(){shareInvite(h.code,h.inv)};
+    clearInterval(pingT);pingT=setInterval(function(){send({t:"ping"})},20000);
+  };
+  s.onmessage=function(e){
+    var m;try{m=JSON.parse(e.data)}catch(x){return}
+    if(m.t==="guest-connected"){paired=true;send({t:"hello",n:N});beginEntry()}else onData(m);
+  };
+  s.onerror=function(){};
+  s.onclose=function(){
+    if(socket!==s||HOST!==h)return;
+    clearInterval(pingT);socket=null;
+    if(paired||started||ended){lost();return}
+    if(!opened&&tries>=3){ended=true;notice("Couldn&rsquo;t set up the room. Check your connection and try again.");return}
+    h.hs.innerHTML="Reconnecting&hellip;";
+    setTimeout(function(){if(HOST===h&&!socket&&!paired&&!started&&!ended)connectHost(opened?0:tries+1)},1500);
+  };
+}
 function hostGame(){
   closeRemote();role="host";
   var code="",i;for(i=0;i<4;i++)code+=ALPHA.charAt(Math.floor(Math.random()*ALPHA.length));
   screen('<h1>Your Room Code</h1><div class="code" aria-label="Room code '+code.split("").join(" ")+'">'+code+'</div><p id="hs">Setting up&hellip;</p><button id="inv" disabled>Share Invite</button>');
-  var hs=document.getElementById("hs"),inv=document.getElementById("inv");
-  shareInvite(code,inv);
-  socket=new WebSocket(roomURL(code,"host"));
-  socket.onopen=function(){hs.innerHTML="Waiting for Player 2&hellip;";inv.disabled=false;inv.onclick=function(){shareInvite(code,inv)}};
-  socket.onmessage=function(e){
-    var m;try{m=JSON.parse(e.data)}catch(x){return}
-    if(m.t==="guest-connected"){send({t:"hello",n:N});beginEntry()}else onData(m);
-  };
-  socket.onerror=function(){ended=true;notice("Couldn&rsquo;t set up the room. Check your connection and try again.")};
-  socket.onclose=lost;
+  HOST={code:code,hs:document.getElementById("hs"),inv:document.getElementById("inv"),n:0};
+  connectHost(0);
+  shareInvite(code,HOST.inv);
 }
 function joinScreen(code){
   screen('<h1>Join a Game</h1><p>Enter the room code.</p><input id="rc" type="text" maxlength="4" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Room code" value="'+(code||"")+'"><p class="status" id="js">&nbsp;</p><button id="jb">Join</button>');
@@ -234,7 +252,7 @@ function joinScreen(code){
     var c=rc.value.toUpperCase().replace(/[^A-Z0-9]/g,"");
     if(c.length!==4){js.textContent="Enter the 4-character code.";return}
     closeRemote();role="guest";jb.disabled=true;js.textContent="Connecting\u2026";
-    var done=false,t=setTimeout(function(){fail("Couldn\u2019t connect. Check the code and try again.")},40000);
+    var done=false,t=setTimeout(function(){fail("Couldn\u2019t connect. Check the code and try again.")},120000);
     function fail(msg){
       if(done)return;done=true;clearTimeout(t);jb.disabled=false;js.textContent=msg;
       if(socket){socket.onopen=socket.onmessage=socket.onerror=socket.onclose=null;try{socket.close()}catch(e){}socket=null}
@@ -242,7 +260,7 @@ function joinScreen(code){
     function attempt(){
       if(done)return;
       var opened=false,s=new WebSocket(roomURL(c,"guest"));socket=s;
-      s.onopen=function(){opened=true;clearTimeout(t);js.textContent="Connected\u2026"};
+      s.onopen=function(){opened=true;clearTimeout(t);js.textContent="Connected\u2026";clearInterval(pingT);pingT=setInterval(function(){send({t:"ping"})},20000)};
       s.onmessage=function(e){var m;try{m=JSON.parse(e.data)}catch(x){return}onData(m)};
       s.onerror=function(){};
       s.onclose=function(){
@@ -342,7 +360,7 @@ function start(){
     else startLocal();
   });
 }
-document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible"&&peer&&peer.disconnected&&!peer.destroyed){try{peer.reconnect()}catch(e){}}});
+document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible"&&HOST&&!socket&&!paired&&!started&&!ended)connectHost(0)});
 document.addEventListener("click",closePop);
 document.addEventListener("keydown",function(e){if(e.key==="Escape")closePop()});
 start();
